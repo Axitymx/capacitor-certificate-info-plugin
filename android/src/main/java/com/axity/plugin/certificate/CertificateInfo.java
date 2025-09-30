@@ -3,9 +3,6 @@ package com.axity.plugin.certificate;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
-
-import org.json.JSONArray;
-
 import java.io.Console;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,130 +23,125 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import org.json.JSONArray;
 
 public class CertificateInfo {
-  private final Context context;
 
-  private final CertificateInfoConfig config;
+    private final Context context;
 
-  public CertificateInfo(Context context, CertificateInfoConfig config) {
-    this.context = context;
-    this.config = config;
-  }
+    private final CertificateInfoConfig config;
 
-  public Date getExpirationDate(String filename) throws Exception {
-    if (filename == null) {
-      throw new CertificateInfoException(CertificateInfoError.FILE_NAME_EMPTY);
+    public CertificateInfo(Context context, CertificateInfoConfig config) {
+        this.context = context;
+        this.config = config;
     }
 
-    X509Certificate cert = openCertificate(filename);
+    public Date getExpirationDate(String filename) throws Exception {
+        if (filename == null) {
+            throw new CertificateInfoException(CertificateInfoError.FILE_NAME_EMPTY);
+        }
 
-    return cert.getNotAfter();
-  }
+        X509Certificate cert = openCertificate(filename);
 
-  public List<Date> getExpirationDates() throws Exception {
-    List<Date> expirationDates = new ArrayList<>();
-
-    List<X509Certificate> certificates = openCertificates();
-
-    for (X509Certificate certificate : certificates) {
-      expirationDates.add(certificate.getNotAfter());
+        return cert.getNotAfter();
     }
 
-    return expirationDates;
-  }
+    public List<Date> getExpirationDates() throws Exception {
+        List<Date> expirationDates = new ArrayList<>();
 
-  public boolean checkValidation(String date) throws Exception {
+        List<X509Certificate> certificates = openCertificates();
 
-    Date dateToCompare = getToday();
+        for (X509Certificate certificate : certificates) {
+            expirationDates.add(certificate.getNotAfter());
+        }
 
-    if(!date.isEmpty()){
-      dateToCompare = parseDate(date);
+        return expirationDates;
     }
 
-    List<X509Certificate> certificates = openCertificates();
-    try{
+    public boolean checkValidation(String date) throws Exception {
+        Date dateToCompare = getToday();
 
-      for (X509Certificate certificate : certificates) {
-          certificate.checkValidity(dateToCompare);
-      }
+        if (!date.isEmpty()) {
+            dateToCompare = parseDate(date);
+        }
 
-      return true;
+        List<X509Certificate> certificates = openCertificates();
+        try {
+            for (X509Certificate certificate : certificates) {
+                certificate.checkValidity(dateToCompare);
+            }
 
-    }catch(CertificateExpiredException | CertificateNotYetValidException e){
-      Log.i("CERTIFICATE_INFO", "Some certificate is expired" + e.getMessage());
-      return false;
-    }
-  }
-
-  public String formatDateToISO(Date dt) {
-    SimpleDateFormat isoFormat = new SimpleDateFormat(config.getDateFormat(), java.util.Locale.getDefault());
-    return isoFormat.format(dt);
-  }
-
-  private Date parseDate(String date){
-    SimpleDateFormat sdf = new SimpleDateFormat(config.PARSE_DATE_FORMAT, Locale.getDefault());
-    sdf.setTimeZone(TimeZone.getTimeZone(config.TIME_ZONE));
-
-    try {
-      return sdf.parse(date);
-    } catch (ParseException e) {
-      Log.i("CERTIFICATE_INFO", "WARNING: Error parsing date, returning current date");
-      return getToday();
+            return true;
+        } catch (CertificateExpiredException | CertificateNotYetValidException e) {
+            Log.i("CERTIFICATE_INFO", "Some certificate is expired" + e.getMessage());
+            return false;
+        }
     }
 
-  }
-
-  private List<X509Certificate> openCertificates() throws Exception {
-    List<X509Certificate> certificates = new ArrayList<>();
-    AssetManager assetManager = context.getAssets();
-    String[] certificateFiles = assetManager.list(config.getCertificatePath());
-
-    if (certificateFiles == null) {
-      throw new CertificateInfoException(CertificateInfoError.READ_DIRECTORY_FILES);
+    public String formatDateToISO(Date dt) {
+        SimpleDateFormat isoFormat = new SimpleDateFormat(config.getDateFormat(), java.util.Locale.getDefault());
+        return isoFormat.format(dt);
     }
 
-    for (String fileName : certificateFiles) {
-      if (fileName.endsWith(config.CERTIFICATE_EXTENSION)) {
-        X509Certificate certificate = openCertificate(fileName);
-        certificates.add(certificate);
-      }
+    private Date parseDate(String date) {
+        SimpleDateFormat sdf = new SimpleDateFormat(config.PARSE_DATE_FORMAT, Locale.getDefault());
+        sdf.setTimeZone(TimeZone.getTimeZone(config.TIME_ZONE));
+
+        try {
+            return sdf.parse(date);
+        } catch (ParseException e) {
+            Log.i("CERTIFICATE_INFO", "WARNING: Error parsing date, returning current date");
+            return getToday();
+        }
     }
 
-    return certificates;
-  }
+    private List<X509Certificate> openCertificates() throws Exception {
+        List<X509Certificate> certificates = new ArrayList<>();
+        AssetManager assetManager = context.getAssets();
+        String[] certificateFiles = assetManager.list(config.getCertificatePath());
 
-  private X509Certificate openCertificate(String filename) throws Exception {
-    try {
-      AssetManager assetManager = context.getAssets();
-      InputStream inputStream = assetManager.open(config.getCertificatePath() + "/" + filename);
+        if (certificateFiles == null) {
+            throw new CertificateInfoException(CertificateInfoError.READ_DIRECTORY_FILES);
+        }
 
-      CertificateFactory cf = CertificateFactory.getInstance(config.CERTIFICATE_FORMAT);
-      Certificate cert = cf.generateCertificate(inputStream);
-      inputStream.close();
+        for (String fileName : certificateFiles) {
+            if (fileName.endsWith(config.CERTIFICATE_EXTENSION)) {
+                X509Certificate certificate = openCertificate(fileName);
+                certificates.add(certificate);
+            }
+        }
 
-      if (cert instanceof X509Certificate x509Cert) {
-        return x509Cert;
-      } else {
-        throw new CertificateInfoException(CertificateInfoError.CERTIFICATE_FORMAT_SUPPORT);
-      }
-
-    } catch (IOException e) {
-      throw new CertificateInfoException(CertificateInfoError.FILE_NOT_FOUND, filename);
-    }catch (CertificateException e){
-      throw new CertificateInfoException(CertificateInfoError.READ_FILE_ERROR, filename);
+        return certificates;
     }
 
-  }
+    private X509Certificate openCertificate(String filename) throws Exception {
+        try {
+            AssetManager assetManager = context.getAssets();
+            InputStream inputStream = assetManager.open(config.getCertificatePath() + "/" + filename);
 
-  private Date getToday(){
-    Calendar today = Calendar.getInstance();
-    today.set(Calendar.HOUR_OF_DAY, 0);
-    today.set(Calendar.MINUTE, 0);
-    today.set(Calendar.SECOND, 0);
-    today.set(Calendar.MILLISECOND, 0);
+            CertificateFactory cf = CertificateFactory.getInstance(config.CERTIFICATE_FORMAT);
+            Certificate cert = cf.generateCertificate(inputStream);
+            inputStream.close();
 
-    return today.getTime();
-  }
+            if (cert instanceof X509Certificate x509Cert) {
+                return x509Cert;
+            } else {
+                throw new CertificateInfoException(CertificateInfoError.CERTIFICATE_FORMAT_SUPPORT);
+            }
+        } catch (IOException e) {
+            throw new CertificateInfoException(CertificateInfoError.FILE_NOT_FOUND, filename);
+        } catch (CertificateException e) {
+            throw new CertificateInfoException(CertificateInfoError.READ_FILE_ERROR, filename);
+        }
+    }
 
+    private Date getToday() {
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+
+        return today.getTime();
+    }
 }
