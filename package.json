@@ -1,6 +1,6 @@
 {
   "name": "@axity/certificate-info",
-  "version": "2.0.1",
+  "version": "7.0.0",
   "description": "Plugin to get SSL certificate information.",
   "author": "Axity MX",
   "main": "dist/plugin.cjs.js",
