@@ -10,14 +10,13 @@ declare module '@capacitor/cli' {
        */
       certificatesPath?: string;
 
-
       /**
        * Only for Android.
        * The format of the output file. Check the [documentation](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/text/SimpleDateFormat.html) to get more information. The default value use the **ISO8601** format,
-       * 
-       * @default "yyyy-MM-dd'T'HH:mm:ss'Z'" 
+       *
+       * @default "yyyy-MM-dd'T'HH:mm:ss'Z'"
        */
-      dateFormat?:string;
+      dateFormat?: string;
     };
   }
 }
@@ -27,40 +26,39 @@ export type CertFilename = {
    * Name of the certification file
    */
   filename: string;
-}
+};
 
 export type CertExpiration = {
   /**
    * Expiration date in ISO 8601 format
    */
-  expirationDate:string;
-}
+  expirationDate: string;
+};
 
 export type CertExpirations = {
   /**
    * List of expiration dates in ISO 8601 format
    */
-  expirationDates: string [];
-}
+  expirationDates: string[];
+};
 
 export type CertDate = {
   /**
    * Date in format ISO 8601
    */
-  date:string;
-}
+  date: string;
+};
 
 export type CertValid = {
   /**
    * Status of the certificate
    */
-  valid: boolean; 
-}
+  valid: boolean;
+};
 
 export interface CertificateInfoPlugin {
-
   /**
-   * Get the expiration date of the certification file. 
+   * Get the expiration date of the certification file.
    * @param params CertFile
    */
   getExpirationDate(params: CertFilename): Promise<CertExpiration>;
@@ -74,5 +72,5 @@ export interface CertificateInfoPlugin {
    * Check if any certificate in directory is valid compared to today. If param is define, check each certificate with the given date.
    * @param params CertDate | undefined
    */
-  checkValidation(params?:CertDate): Promise<CertValid>;
+  checkValidation(params?: CertDate): Promise<CertValid>;
 }
