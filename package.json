@@ -1,7 +1,8 @@
 {
-  "name": "certificate-info",
-  "version": "0.0.1",
+  "name": "@axity/certificate-info",
+  "version": "6.0.0",
   "description": "Plugin to get SSL certificate information.",
+  "author": "Axity MX",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -13,17 +14,17 @@
     "ios/Sources",
     "ios/Tests",
     "Package.swift",
-    "CertificateInfo.podspec"
+    "AxityCertificateInfo.podspec"
   ],
-  "author": "axity",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://www.axity.com.git"
+    "url": "git+https://github.com/Axitymx/capacitor-certificate-info-plugin.git"
   },
   "bugs": {
-    "url": "https://www.axity.com/issues"
+    "url": "git+https://github.com/Axitymx/capacitor-certificate-info-plugin/issues"
   },
+  "homepage": "https://github.com/Axitymx/capacitor-certificate-info-plugin#README.md",
   "keywords": [
     "capacitor",
     "plugin",
